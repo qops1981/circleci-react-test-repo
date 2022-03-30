@@ -34,7 +34,7 @@ jobs:
     docker:
       - image: cimg/python:3.6
     steps:
-      - target_file_creation:
+      - run:
           name: Create Target File
           command: |
             echo "${CIRCLE_SHA1}" >> target
@@ -43,7 +43,7 @@ jobs:
           to: "s3://blige-app/"
 
 workflows:
-  branch_commit:
+  on_commit:
     jobs:
       - build_and_test
       - deploy:
