@@ -39,6 +39,8 @@ jobs:
           command: |
             echo "${CIRCLE_SHA1}" >> target
       - aws-s3/sync:
+          arguments: |
+            --content-type="text/plain"
           from: .
           to: "s3://blige-app/"
 
