@@ -21,20 +21,37 @@ jobs:
           root: ~/project/build
           paths:
             - .
-  deploy: # this can be any name you choose
+  deploy:
     docker:
       - image: cimg/python:3.6
     steps:
       - attach_workspace:
           at: ~/project
-      - aws-s3/sync: #invokes the sync command declared in the s3 orb
+      - aws-s3/sync:
           from: .
           to: "s3://blige-app/${CIRCLE_SHA1}"
+  target:
+    docker:
+      - image: cimg/python:3.6
+    steps:
+      - target_file_creation:
+          name: Create Target File
+          command: |
+            echo "${CIRCLE_SHA1}" >> target
+      - aws-s3/sync:
+          from: target
+          to: "s3://blige-app/"
 
 workflows:
-  on_commit:
+  branch_commit:
     jobs:
       - build_and_test
       - deploy:
           requires:
             - build_and_test
+      - target:
+          requires:
+            - deploy
+          filters:
+            branches:
+              only: main
