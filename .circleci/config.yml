@@ -30,16 +30,16 @@ jobs:
       - run:
           command: |
             echo "${CIRCLE_BRANCH/\//+}"
-            DIRECTORY_NAME="${CIRCLE_BRANCH/\//-}"
-            [[ CIRCLE_BRANCH != "main" ]] || DIRECTORY_NAME="${CIRCLE_SHA1}"
-            export DIRECTORY_NAME
-            echo "${DIRECTORY_NAME}"
+            BUCKET_LOC="${CIRCLE_BRANCH/\//+}"
+            [[ CIRCLE_BRANCH != "main" ]] || BUCKET_LOC="${CIRCLE_SHA1}"
+            export BUCKET_LOC
+            echo "${BUCKET_LOC}"
           name: Modify branch name
       - aws-s3/sync:
           arguments: |
             --delete
           from: .
-          to: "s3://blige-app/${CIRCLE_SHA1}"
+          to: "s3://blige-app/${BUCKET_LOC}"
   target:
     docker:
       - image: cimg/python:3.6
