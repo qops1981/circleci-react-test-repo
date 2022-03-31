@@ -37,6 +37,7 @@ jobs:
           command: |
             export CIRCLE_REPOSITORY="${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
             export GITHUB_PR_NUMBER=$(./github-pull_request_id "${CIRCLE_REPOSITORY}" "${CIRCLE_SHA1}")
+            echo "Running: github-pull_request_id ${CIRCLE_REPOSITORY} ${CIRCLE_SHA1}"
           name: Copy Tools into Workspace
       - aws-s3/sync:
           arguments: |
