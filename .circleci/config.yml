@@ -19,7 +19,6 @@ jobs:
           name: Build app
       - run:
           command: |
-            ls -la
             mkdir workspace
             cp -av build workspace/
             cp -av .circleci/github-pull_request_id workspace/

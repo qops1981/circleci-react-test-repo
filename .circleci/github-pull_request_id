@@ -1,0 +1,19 @@
+#! /usr/bin/env bash
+
+REPOSITORY=$1
+COMMIT_SHA=$2
+
+github_pull_request_number_from_commit_sha() {
+
+  curl -s -H "Accept: application/vnd.github.v3+json" \
+  https://api.github.com/repos/"${REPOSITORY}"/commits/"${COMMIT_SHA}"/pulls
+
+}
+
+python_parse_json_for_pr_number() {
+
+  python -c 'import sys, json; print(json.load(sys.stdin)[0]["number"])'
+
+}
+
+github_pull_request_number_from_commit_sha | python_parse_json_for_pr_number
