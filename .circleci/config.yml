@@ -17,17 +17,11 @@ jobs:
       - run:
           command: yarn build
           name: Build app
-      - run:
-          command: |
-            mkdir workspace
-            cp -av build workspace/
-            cp -av .circleci/github-pull_request_id workspace/
-          name: Create workspace and copy files into it
       - persist_to_workspace:
-          root: ~/project/workspace
+          root: ~/project/build
           paths:
             - .
-  deploy_pr:
+  deploy:
     docker:
       - image: cimg/python:3.6
     steps:
@@ -35,23 +29,17 @@ jobs:
           at: ~/project
       - run:
           command: |
-            export CIRCLE_REPOSITORY="${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
-            export GITHUB_PR_NUMBER=$(./github-pull_request_id "${CIRCLE_REPOSITORY}" "${CIRCLE_SHA1}")
-          name: Copy Tools into Workspace
+            NAME_HASH="$(echo ${CIRCLE_BRANCH} | md5sum | cut -c -7)"
+            BUCKET_LOC="${NAME_HASH}-${CIRCLE_BRANCH##*/}"
+            [[ CIRCLE_BRANCH != "main" ]] || BUCKET_LOC="${CIRCLE_SHA1}"
+            echo "export BUCKET_LOC=${BUCKET_LOC}" >> $BASH_ENV
+            source $BASH_ENV
+          name: Modify branch name
       - aws-s3/sync:
           arguments: |
-              --delete
-          from: ./build
-          to: "s3://blige-app/pr-${GITHUB_PR_NUMBER}"
-  deploy_main:
-    docker:
-      - image: cimg/python:3.6
-    steps:
-      - attach_workspace:
-          at: ~/project
-      - aws-s3/sync:
-          from: ./build
-          to: "s3://blige-app/${CIRCLE_SHA1}"
+            --delete
+          from: .
+          to: "s3://blige-app/${BUCKET_LOC}"
   target:
     docker:
       - image: cimg/python:3.6
@@ -70,21 +58,12 @@ workflows:
   on_commit:
     jobs:
       - build_and_test
-      - deploy_pr:
+      - deploy:
           requires:
             - build_and_test
-          filters:
-            branches:
-              ignore: main
-      - deploy_main:
-          requires:
-            - build_and_test
-          filters:
-            branches:
-              only: main
       - target:
           requires:
-            - deploy_main
+            - deploy
           filters:
             branches:
               only: main
