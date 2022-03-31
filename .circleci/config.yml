@@ -17,8 +17,14 @@ jobs:
       - run:
           command: yarn build
           name: Build app
+      - run:
+          command: |
+            mkdir workspace
+            cp -av build workspace/
+            cp -av .circleci/github-pull_request_id workspace/
+          name: Create workspace and copy files into it
       - persist_to_workspace:
-          root: ~/project/build
+          root: ~/project/workspace
           paths:
             - .
   deploy:
@@ -27,9 +33,16 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/project
+      - run:
+          command: |
+            export CIRCLE_REPOSITORY="${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
+            export GITHUB_PR_NUMBER=$(./github-pull_request_id "${CIRCLE_REPOSITORY}" "${CIRCLE_SHA1}")
+          name: Copy Tools into Workspace
       - aws-s3/sync:
-          from: .
-          to: "s3://blige-app/${CIRCLE_SHA1}"
+          arguments: |
+              --delete
+          from: ./build
+          to: "s3://blige-app/pr-${GITHUB_PR_NUMBER}"
   target:
     docker:
       - image: cimg/python:3.6
@@ -57,3 +70,4 @@ workflows:
           filters:
             branches:
               only: main
+
