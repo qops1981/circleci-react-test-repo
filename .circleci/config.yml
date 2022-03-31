@@ -36,7 +36,8 @@ jobs:
             echo "${DIRECTORY_NAME}"
           name: Modify branch name
       - aws-s3/sync:
-          arguments: '--delete'
+          arguments: |
+            --delete
           from: .
           to: "s3://blige-app/${DIRECTORY_NAME}"
   target:
