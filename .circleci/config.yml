@@ -29,10 +29,10 @@ jobs:
           at: ~/project
       - run:
           command: |
-            echo "${CIRCLE_BRANCH/\//+}"
             BUCKET_LOC="${CIRCLE_BRANCH/\//+}"
             [[ CIRCLE_BRANCH != "main" ]] || BUCKET_LOC="${CIRCLE_SHA1}"
-            export BUCKET_LOC
+            echo "export BUCKET_LOC=${BUCKET_LOC}" >> $BASH_ENV
+            source $BASH_ENV
             echo "${BUCKET_LOC}"
           name: Modify branch name
       - aws-s3/sync:
