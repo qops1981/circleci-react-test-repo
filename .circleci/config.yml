@@ -29,9 +29,11 @@ jobs:
           at: ~/project
       - run:
           command: |
+            echo "${CIRCLE_BRANCH/\//+}"
             DIRECTORY_NAME="${CIRCLE_BRANCH/\//+}"
             [[ CIRCLE_BRANCH != "main" ]] || DIRECTORY_NAME="${CIRCLE_SHA1}"
             export DIRECTORY_NAME
+            echo "${DIRECTORY_NAME}"
           name: Modify branch name
       - aws-s3/sync:
           arguments: '--delete'
