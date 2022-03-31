@@ -39,7 +39,7 @@ jobs:
           arguments: |
             --delete
           from: .
-          to: "s3://blige-app/${DIRECTORY_NAME}"
+          to: "s3://blige-app/${CIRCLE_SHA1}"
   target:
     docker:
       - image: cimg/python:3.6
